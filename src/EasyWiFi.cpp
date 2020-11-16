@@ -10,7 +10,7 @@
  
 #include "EasyWiFi.h"
 
-#define DBGON    // Debug option  -serial print
+//#define DBGON    // Debug option  -serial print
 //#define DBGON_X   // Debug option - incl packets
 
 char ACCESPOINTNAME[SSIDBUFFERSIZE] = APNAME;       // AP name, dynamic adaptable
