@@ -1,0 +1,10 @@
+
+EasyWiFi	KEYWORD1
+
+start	KEYWORD2
+erase	KEYWORD2
+seed	KEYWORD2
+apname  KEYWORD2
+channel KEYWORD2
+filename  KEYWORD2
+
