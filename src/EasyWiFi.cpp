@@ -5,7 +5,7 @@
  * 
  * 
  * 
- * Released into the public domain.
+ * Released into the public domain on github: https://github.com/javos65/EasyWifi-for-MKR1010
  */
  
 #include "EasyWiFi.h"
