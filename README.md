@@ -1,4 +1,4 @@
-# EasyWifi-for-MKR1010
+# EasyWifi
 EasyWifi setup for Arduino MKR1010 modules with uBLox Nina (ESP32) wifi
 
 EasyWifi means ifi setup without storing your credentials (SSID/Password) in your code, and have easy credential input by means of a Wifi AccessPoint entry by smartphone.
