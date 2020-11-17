@@ -2,8 +2,15 @@
  * EasyWiFi
  * Created by John V. - 2020 V 1.1.0
  * 
+ *  RGB LED INDICATOR on uBlox nina Module
+ *  GREEN: Connected
+ *  
+ *  BLUE: (Stored) Credentials found, connecting         <<<<--_
+ *  YELLOW: No Stored Credentials found, connecting             \
+ *  PURPLE: Can't connect, opening AP for credentials input      |
+ *  CYAN: Client connected to AP, wait for credentials input >>--/
  * 
- * 
+ *  RED: Not connected / Can't connect, wifi.start is stopped, return to program
  * 
  * Released into the public domain on github: https://github.com/javos65/EasyWifi-for-MKR1010
  */
@@ -55,50 +62,68 @@ EasyWiFi::EasyWiFi()
 
 // Login to local network  //
 void EasyWiFi::start(){
-int  t=0;
+int  noconnect=0,totalconnect=0;;
 WiFi.disconnect();delay(2000);
+NINAled(BLUE); // Starting to connect: Set Blue  
 int G_Wifistatus = WiFi.status();
 if ( ( G_Wifistatus != WL_CONNECTED) || (WiFi.RSSI() <= -90) ||(WiFi.RSSI() ==0) ) { // check if connected
 // Read SSId File
   if (Read_Credentials(G_ssid,G_pass)==0) {  // read credentials, if not possible, re-use the old-already loaded credentials
+  NINAled(ORANGE); // no credentials found SET YELLOW
 #ifdef DBGON
       Serial.println("* Using old credentials");
 #endif
   } 
   while ( (G_Wifistatus != WL_CONNECTED) || (WiFi.RSSI() <= -90) || (WiFi.RSSI() ==0) ) {   // attempt to connect to WiFi network:
-      t=1;
-      while ( ((G_Wifistatus != WL_CONNECTED) || (WiFi.RSSI() <= -90) || (WiFi.RSSI() ==0) ) && t<=3) {   // attempt to connect to WiFi network 3 times
+      noconnect=0;
+      while ( ((G_Wifistatus != WL_CONNECTED) || (WiFi.RSSI() <= -90) || (WiFi.RSSI() ==0) ) && noconnect<MAXCONNECT) {   // attempt to connect to WiFi network 3 times
 #ifdef DBGON
           Serial.print("* Attempt#");Serial.print(t);Serial.print(" to connect to Network: ");Serial.println(G_ssid);                // print the network name (SSID);
 #endif
            G_Wifistatus = WiFi.begin(G_ssid, G_pass);     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
            delay(2000);                                   // wait 2 seconds for connection:
-           t++;                                         // try-counter
+           noconnect++;                                   // try-counter
            }
-      if ( G_Wifistatus == WL_CONNECTED ) {       
+      totalconnect=totalconnect+noconnect;                // count total failed connects     
+      if ( G_Wifistatus == WL_CONNECTED ) {    
+       NINAled(GREEN); // Set Green   
 #ifdef DBGON
       printWiFiStatus();                        // you're connected now, so print out the status anmd break while loop
 #endif
       break;
       }
+      else if (totalconnect > ESCAPECONNECT ){
+      NINAled(RED); // Set red 
+#ifdef DBGON
+      Serial.println("* Connection not possible after too many retries, quit wifi.start process");                   
+#endif
+      break;
+            }
       else{                                          // no connection possible : exit without server started
 #ifdef DBGON
       Serial.println("* Connection not possible after several retries, opening Access Point");                   
 #endif
        // start direct-Wifi connect to manualy input Wifi credentials
+        NINAled(PURPLE); // no network, : RED
         listNetworks();                         // load avaialble networks in a list
         APSetup();
+        NINAled(PURPLE); // no network, : RED
         G_APInputflag=0;
         while(!G_APInputflag) {                 // Keep AP open till input is received or till 30 seconds are over
                               // Check AP status - new client on or of ?
               if (G_APStatus != WiFi.status()) {
                   G_APStatus = WiFi.status();                                 // it has changed update the variable
                   if (G_APStatus == WL_AP_CONNECTED) {                         // a device has connected to the AP
+#ifdef DBGON                     
                     Serial.println("Device connected to AP\n"); 
+#endif                 
+                    NINAled(CYAN); // Client on AP : purple
                     G_DNSRqstcounter=0;                                           // reset DNS counter
                   }
                   else {                                                     // a device has disconnected from the AP, and we are back in listening mode
+#ifdef DBGON                  
                     Serial.println("Device disconnected from AP\n");
+#endif                    
                   }
               } // end if loop changed G_APStatus                              
               if (G_APStatus == WL_AP_CONNECTED)  // IF client connected to AP, start DNS and check Webserver
@@ -110,11 +135,13 @@ if ( ( G_Wifistatus != WL_CONNECTED) || (WiFi.RSSI() <= -90) ||(WiFi.RSSI() ==0)
         G_UDPAP_DNS.stop();        // Close UDP connection
         WiFi.end(); 
         WiFi.disconnect();
+        NINAled(BLUE); // new credentials : BLUE
         delay(2000);
       }
   } // ever while loop till connected
 } // end if not connected
 else{
+    NINAled(GREEN); // Set Green  
 #ifdef DBGON
     Serial.println("* Already connected.");                     // you're already connected
     printWiFiStatus(); 
@@ -622,5 +649,19 @@ while(textin[t]!=0) {
 #ifdef DBGON
 // Serial.print("* Decyphered ");Serial.print(t);Serial.print(" - ");Serial.println(textout);
 #endif
+}
+
+/* Set RGB led on uBlox Module R-G-B , max 128*/
+void EasyWiFi::NINAled(char r, char g, char b)
+{
+  // Set LED pin modes to output
+  WiFiDrv::pinMode(25, OUTPUT);
+  WiFiDrv::pinMode(26, OUTPUT);
+  WiFiDrv::pinMode(27, OUTPUT);
+  
+  // Set all LED color 
+  WiFiDrv::analogWrite(25, g%128);    // GREEN
+  WiFiDrv::analogWrite(26, r%128);    // RED
+  WiFiDrv::analogWrite(27, b%128);    // BLUE
 }
 

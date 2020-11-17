@@ -22,6 +22,8 @@
 #define SECRET_PASS "NoPassword"	         // Backup Pass - not required
 #define CREDENTIALFILE "/fs/credfile"
 #define APNAME "EasyWiFi_AP"
+#define MAXCONNECT 3                       // Max number of wifi logon connects before opening AP
+#define ESCAPECONNECT 15                   // Max number of Total wifi logon retries-connects before escaping/stopping the Wifi start
 
 // Define UDP settings for DNS 
 #define UDP_PACKET_SIZE 1024          // UDP packet size time out, preventign too large packet reads
@@ -30,8 +32,13 @@
 #define DNSMAXREQUESTS 32             // trigger first DNS requests, to redirect to own web-page
 #define UDPPORT  53                   // local port to listen for UDP packets
 
-//void WiFi_Handler(void);      // ISR HANDLER FOR WiFi
-//extern int WDTZeroCounter;      // SOFT COUNTER FOR EXTENDING WDT TIME VIA EW INTERRUPT
+// Define RGB values for NINALed
+#define RED 16,0,0
+#define ORANGE 5,3,0
+#define GREEN 0,8,0
+#define BLUE 0,0,20
+#define PURPLE 6,0,10
+#define CYAN 0,6,10
 
 class EasyWiFi
 {
@@ -55,6 +62,7 @@ class EasyWiFi
   void listNetworks();
   void APSetup();
   void printWiFiStatus();
+  void NINAled(char r, char g, char b);
   
 };
 
