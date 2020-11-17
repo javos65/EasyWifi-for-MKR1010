@@ -13,13 +13,11 @@ Enter your credentials by phone and store them back in Flash.
 
 RGB color code:
 
-GREEN: Connected
- *  
+ *  GREEN : Connected
  *  BLUE: (Stored) Credentials found, connecting         <<<<--_
  *  YELLOW: No Stored Credentials found, connecting             \
  *  PURPLE: Can't connect, opening AP for credentials input      |
  *  CYAN: Client connected to AP, wait for credentials input >>--/
- * 
  *  RED: Not connected / Can't connect, wifi.start is stopped, return to program
 
 
