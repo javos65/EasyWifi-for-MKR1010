@@ -1,10 +1,9 @@
 # EasyWifi
 EasyWifi setup for Arduino MKR1010 modules with uBLox Nina (ESP32) wifi
 
-EasyWifi means ifi setup without storing your credentials (SSID/Password) in your code, and have easy credential input by means of a Wifi AccessPoint entry by smartphone.
+EasyWifi means Wifi setup without storing your credentials (SSID/Password) in your code, and have easy credential input by means of a Wifi AccessPoint entry by smartphone.
 
 Based on Wifi-library for NINA uBlox.
-
 This supports the class EasyWiFi
 
 EasyWiFi.start(): starts wifi setup, reading credentials (if avaialble) from flash-disk on the Module and start Wifi login.
