@@ -1,6 +1,6 @@
  /*
  * EasyWiFi
- * Created by John V. - 2020 V 1.1.0
+ * Created by John V. - 2020 V 1.4.1
  * 
  *  RGB LED INDICATOR on uBlox nina Module
  *  GREEN: Connected
@@ -17,13 +17,13 @@
  
 #include "EasyWiFi.h"
 
-//#define DBGON    // Debug option  -serial print
+#define DBGON    // Debug option  -serial print
 //#define DBGON_X   // Debug option - incl packets
 
 char ACCESPOINTNAME[SSIDBUFFERSIZE] = APNAME;       // AP name, dynamic adaptable
 char G_SSIDList[MAXSSID][SSIDBUFFERSIZE];                     // Store of available SSID's
 int G_APStatus = WL_IDLE_STATUS, G_APInputflag;               // global AP flag to use
-int G_ssidCounter = 0;                //Gloabl counter for number of foubnd SSID's
+int G_ssidCounter = 0;                //Gloabl counter for number of found SSID's
 char G_ssid[32] = SECRET_SSID;        // optional init: your network SSID (name) 
 char G_pass[32] = SECRET_PASS;        // optional init: your network password 
 WiFiServer G_APWebserver(80);         // Global Acces Point Web Server
@@ -33,6 +33,8 @@ IPAddress G_APDNSclientip;
 int G_DNSClientport;
 int G_DNSRqstcounter=0;
 int SEED=4;
+boolean G_useAP=1; // use AP after loging failure, or quit with no AP service
+boolean G_ledon=1; // leds on or of
 byte G_UDPPacketbuffer[UDP_PACKET_SIZE];  // buffer to hold incoming and outgoing packets
 byte G_DNSReplyheader[DNSHEADER_SIZE] = { 
   0x00,0x00,   // ID, to be filled in #offset 0
@@ -78,7 +80,7 @@ if ( ( G_Wifistatus != WL_CONNECTED) || (WiFi.RSSI() <= -90) ||(WiFi.RSSI() ==0)
       noconnect=0;
       while ( ((G_Wifistatus != WL_CONNECTED) || (WiFi.RSSI() <= -90) || (WiFi.RSSI() ==0) ) && noconnect<MAXCONNECT) {   // attempt to connect to WiFi network 3 times
 #ifdef DBGON
-          Serial.print("* Attempt#");Serial.print(t);Serial.print(" to connect to Network: ");Serial.println(G_ssid);                // print the network name (SSID);
+          Serial.print("* Attempt#");Serial.print(noconnect);Serial.print(" to connect to Network: ");Serial.println(G_ssid);                // print the network name (SSID);
 #endif
            G_Wifistatus = WiFi.begin(G_ssid, G_pass);     // Connect to WPA/WPA2 network. Change this line if using open or WEP network:
            delay(2000);                                   // wait 2 seconds for connection:
@@ -92,7 +94,7 @@ if ( ( G_Wifistatus != WL_CONNECTED) || (WiFi.RSSI() <= -90) ||(WiFi.RSSI() ==0)
 #endif
       break;
       }
-      else if (totalconnect > ESCAPECONNECT ){
+      else if ( (totalconnect > ESCAPECONNECT) || (G_useAP==false) ){ // quite login service ?
       NINAled(RED); // Set red 
 #ifdef DBGON
       Serial.println("* Connection not possible after too many retries, quit wifi.start process");                   
@@ -107,7 +109,7 @@ if ( ( G_Wifistatus != WL_CONNECTED) || (WiFi.RSSI() <= -90) ||(WiFi.RSSI() ==0)
         NINAled(PURPLE); // no network, : RED
         listNetworks();                         // load avaialble networks in a list
         APSetup();
-        NINAled(PURPLE); // no network, : RED
+        NINAled(PURPLE); // start AP, : Purple
         G_APInputflag=0;
         while(!G_APInputflag) {                 // Keep AP open till input is received or till 30 seconds are over
                               // Check AP status - new client on or of ?
@@ -651,9 +653,23 @@ while(textin[t]!=0) {
 #endif
 }
 
+
+/* Set Led indicator active on or off - for low power usage*/
+void EasyWiFi::led(boolean value)
+{
+  G_ledon=value;
+}
+
+/* Set AP or no AP service*/
+void EasyWiFi::useAP(boolean value)
+{
+  G_useAP=value;
+}
+
 /* Set RGB led on uBlox Module R-G-B , max 128*/
 void EasyWiFi::NINAled(char r, char g, char b)
 {
+  if (G_ledon) {
   // Set LED pin modes to output
   WiFiDrv::pinMode(25, OUTPUT);
   WiFiDrv::pinMode(26, OUTPUT);
@@ -663,5 +679,6 @@ void EasyWiFi::NINAled(char r, char g, char b)
   WiFiDrv::analogWrite(25, g%128);    // GREEN
   WiFiDrv::analogWrite(26, r%128);    // RED
   WiFiDrv::analogWrite(27, b%128);    // BLUE
+  }
 }
 

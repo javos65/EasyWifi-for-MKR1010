@@ -1,6 +1,6 @@
  /*
  * EasyWiFi
- * Created by John V. - 2020 V 1.1.0
+ * Created by John V. - 2020 V 1.4.1
  * 
  * 
  * 
@@ -22,7 +22,7 @@
 #define SECRET_PASS "NoPassword"	         // Backup Pass - not required
 #define CREDENTIALFILE "/fs/credfile"
 #define APNAME "EasyWiFi_AP"
-#define MAXCONNECT 3                       // Max number of wifi logon connects before opening AP
+#define MAXCONNECT 4                       // Max number of wifi logon connects before opening AP
 #define ESCAPECONNECT 15                   // Max number of Total wifi logon retries-connects before escaping/stopping the Wifi start
 
 // Define UDP settings for DNS 
@@ -39,6 +39,7 @@
 #define BLUE 0,0,20
 #define PURPLE 6,0,10
 #define CYAN 0,6,10
+#define BLACK 0,0,0
 
 class EasyWiFi
 {
@@ -48,7 +49,9 @@ class EasyWiFi
     byte erase();
     byte apname(char * name);  
     void seed(int value);
-
+    void led(boolean value);
+    void useAP(boolean value);
+    void NINAled(char r, char g, char b);
     
   private:                      
   void SimpleDecypher(char * textin, char * textout);
@@ -62,7 +65,7 @@ class EasyWiFi
   void listNetworks();
   void APSetup();
   void printWiFiStatus();
-  void NINAled(char r, char g, char b);
+  
   
 };
 
